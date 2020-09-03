@@ -1,42 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Posts from "./Posts";
+import { firestore } from "../firebase";
 
 const Application = () => {
+  const [posts, setPosts] = useState([]);
   const handleCreate = (post) => {
-    setPosts([post, ...posts]);
+    firestore.collection("posts").add(post);
+    // setPosts([post, ...posts]);
   };
+  useEffect(() => {
+    async function getPosts() {
+      const snapshot = await firestore.collection("posts").get();
+      const posts = snapshot.docs.map((doc) => {
+        const { id } = doc;
+        const data = doc.data();
+        return { id, ...data };
+      });
+      setPosts(posts);
+    }
 
-  const [posts, setPosts] = useState([
-    {
-      id: "1",
-      title: "A Very Hot Take",
-      content:
-        "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Perferendis suscipit repellendus modi unde cumque, fugit in ad necessitatibus eos sed quasi et! Commodi repudiandae tempora ipsum fugiat. Quam, officia excepturi!",
-      user: {
-        uid: "123",
-        displayName: "Bill Murray",
-        email: "billmurray@mailinator.com",
-        photoURL: "https://www.fillmurray.com/300/300",
-      },
-      stars: 1,
-      comments: 47,
-    },
-    {
-      id: "2",
-      title: "The Sauciest of Opinions",
-      content:
-        "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Perferendis suscipit repellendus modi unde cumque, fugit in ad necessitatibus eos sed quasi et! Commodi repudiandae tempora ipsum fugiat. Quam, officia excepturi!",
-      user: {
-        uid: "456",
-        displayName: "Mill Burray",
-        email: "notbillmurray@mailinator.com",
-        photoURL: "https://www.fillmurray.com/400/400",
-      },
-      stars: 3,
-      comments: 0,
-    },
-  ]);
+    getPosts();
+  }, []);
+
   return (
     <main className="Application">
       <h1>Think Piece</h1>
