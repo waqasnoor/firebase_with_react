@@ -6,8 +6,20 @@ import { firestore } from "../firebase";
 const Application = () => {
   const [posts, setPosts] = useState([]);
   const handleCreate = (post) => {
-    firestore.collection("posts").add(post);
-    // setPosts([post, ...posts]);
+    firestore
+      .collection("posts")
+      .add(post)
+      .then((ref) => {
+        setPosts([{ id: ref.id, ...post }, ...posts]);
+      });
+  };
+  const handleRemove = (id) => () => {
+    firestore
+      .doc(`posts/${id}`)
+      .delete()
+      .then(() => {
+        setPosts(posts.filter((post) => post.id !== id));
+      });
   };
   useEffect(() => {
     async function getPosts() {
@@ -26,7 +38,7 @@ const Application = () => {
   return (
     <main className="Application">
       <h1>Think Piece</h1>
-      <Posts posts={posts} onCreate={handleCreate} />
+      <Posts posts={posts} onCreate={handleCreate} onRemove={handleRemove} />
     </main>
   );
 };
