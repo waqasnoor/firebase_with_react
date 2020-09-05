@@ -5,40 +5,33 @@ import { firestore } from "../firebase";
 
 const Application = () => {
   const [posts, setPosts] = useState([]);
-  const handleCreate = (post) => {
-    firestore
-      .collection("posts")
-      .add(post)
-      .then((ref) => {
-        setPosts([{ id: ref.id, ...post }, ...posts]);
-      });
-  };
-  const handleRemove = (id) => () => {
-    firestore
-      .doc(`posts/${id}`)
-      .delete()
-      .then(() => {
-        setPosts(posts.filter((post) => post.id !== id));
-      });
-  };
-  useEffect(() => {
-    async function getPosts() {
-      const snapshot = await firestore.collection("posts").get();
+  const handleCreate = (post) => firestore.collection("posts").add(post);
+
+  async function getPosts() {
+    return firestore.collection("posts").onSnapshot((snapshot) => {
       const posts = snapshot.docs.map((doc) => {
         const { id } = doc;
         const data = doc.data();
         return { id, ...data };
       });
-      setPosts(posts);
-    }
 
-    getPosts();
+      setPosts(posts);
+    });
+
+    // const snapshot = await firestore
+    //   .collection("posts")
+    //   .orderBy("createdAt", "desc")
+    //   .get();
+  }
+  useEffect(() => {
+    const unsubscribe = getPosts();
+    return () => unsubscribe();
   }, []);
 
   return (
     <main className="Application">
       <h1>Think Piece</h1>
-      <Posts posts={posts} onCreate={handleCreate} onRemove={handleRemove} />
+      <Posts posts={posts} onCreate={handleCreate} />
     </main>
   );
 };
