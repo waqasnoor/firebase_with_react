@@ -17,11 +17,6 @@ const Application = () => {
 
       setPosts(posts);
     });
-
-    // const snapshot = await firestore
-    //   .collection("posts")
-    //   .orderBy("createdAt", "desc")
-    //   .get();
   }
   useEffect(() => {
     const unsubscribe = getPosts();
@@ -31,7 +26,7 @@ const Application = () => {
   return (
     <main className="Application">
       <h1>Think Piece</h1>
-      <Posts posts={posts} onCreate={handleCreate} />
+      <Posts posts={posts} />
     </main>
   );
 };
